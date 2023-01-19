@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/riyan-eng/go-restfull-api-psql/internals/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -17,5 +18,10 @@ func ConnectDb() {
 	if err != nil {
 		panic("Connection failed to Database")
 	}
+
 	fmt.Println("Connection Opened to Database")
+
+	// migrate database
+	DB.AutoMigrate(&models.Note{})
+	fmt.Println("Database migrated")
 }
