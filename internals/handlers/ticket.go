@@ -88,12 +88,9 @@ func CheckAvailable(ticketId string) (Available, error) {
 	query := fmt.Sprintf(`
 	select coalesce(count(o.ticket), 0) as amount,
 	case when coalesce(count(o.ticket), 0) >= (select t.quantity from public.tickets t where t.id='%v')
-	then 'unavailable' else 'available' 
-	end as status
-	from public.orders o
-	where o.ticket = '%v'
+	then 'unavailable' else 'available' end as status
+	from public.orders o where o.ticket = '%v'
 	`, ticketId, ticketId)
-
 	var available Available
 	err := db.Raw(query).Scan(&available).Error
 	if err != nil {
@@ -107,9 +104,12 @@ func ValidateTicketOrder(c *fiber.Ctx) error {
 	orderId := c.Params("orderId")
 	var order = new(models.Order)
 	var db = database.DB
-	query := fmt.Sprintf("select * from public.orders o join public.tickets t on t.id=o.ticket where o.id='%v' and now() >= t.start_time and now() <= t.end_time ", orderId)
+	query := fmt.Sprintf(`
+	select * from public.orders o 
+	join public.tickets t on t.id=o.ticket 
+	where o.id='%v' and now() >= t.start_time and now() <= t.end_time 
+	`, orderId)
 	result := db.Raw(query).Scan(&order)
-	// fmt.Println(result.RowsAffected)
 	switch result.RowsAffected {
 	case 1:
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
