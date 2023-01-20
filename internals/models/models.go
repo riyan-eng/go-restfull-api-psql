@@ -25,12 +25,13 @@ type Slot struct {
 	gorm.Model
 	ID             string `gorm:"primary_key"`
 	Time           time.Time
+	Quantity       uint
 	Available      string
 	ServiceAgent   string
 	ServiceAgentID ServiceAgent `gorm:"foreignKey:ServiceAgent; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
-type Tickets struct {
+type Ticket struct {
 	gorm.Model
 	ID             string `gorm:"primary_key"`
 	Type           string
