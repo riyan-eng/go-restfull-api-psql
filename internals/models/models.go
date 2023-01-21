@@ -43,8 +43,6 @@ type Ticket struct {
 	Price          float32
 	ServiceAgent   string       `json:"service_agent"`
 	ServiceAgentID ServiceAgent `gorm:"foreignKey:ServiceAgent; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
-	// Slot           string
-	// SlotID         Slot `gorm:"foreignKey:Slot; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Order struct {
@@ -55,4 +53,22 @@ type Order struct {
 	WA       string
 	Ticket   string
 	TicketID Ticket `gorm:"foreignKey:Ticket; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+}
+
+type COA struct {
+	gorm.Model
+	ID     string `gorm:"primary_key"`
+	Code   string
+	Name   string
+	Parent string
+}
+
+type GeneralLeger struct {
+	ServiceAgent    string
+	ServiceAgentID  ServiceAgent `gorm:"foreignKey:ServiceAgent; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	TransactionName string
+	COA             string
+	COAID           COA `gorm:"foreignKey:COA; constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Debet           float64
+	Credit          float64
 }
