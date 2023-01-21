@@ -14,5 +14,5 @@ func SetupTicketRoutes(router fiber.Router) {
 	ticket.Delete("/:noteId", func(c *fiber.Ctx) error { return nil })
 
 	ticket.Post("/order/:ticketId", ticketHandler.OrderTicket)
-	ticket.Get("/validate/:orderId", ticketHandler.ValidateTicketOrder)
+	ticket.Post("/validate/:ticketId", ticketHandler.ValidateTicketOrder)
 }

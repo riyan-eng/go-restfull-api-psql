@@ -26,7 +26,9 @@ func CreateTicket(c *fiber.Ctx) error {
 	db.Create(ticket)
 
 	return c.JSON(fiber.Map{
-		"data":    ticket,
+		"data": fiber.Map{
+			"InsertedId": ticket.ID,
+		},
 		"message": "ok",
 	})
 }
@@ -100,28 +102,57 @@ func CheckAvailable(ticketId string) (Available, error) {
 	}
 }
 
+var BodyJsonValidate struct {
+	OrderID string `json:"order_id"`
+}
+
+var DataOrder struct {
+	ID         string
+	Name       string
+	Email      string
+	WA         string
+	Ticket     string
+	TicketName string
+}
+
 func ValidateTicketOrder(c *fiber.Ctx) error {
-	orderId := c.Params("orderId")
-	var order = new(models.Order)
+	ticketId := c.Params("ticketId")
+	var order = DataOrder
 	var db = database.DB
+	var bodyJsonValdate = BodyJsonValidate
+
+	c.BodyParser(&bodyJsonValdate)
+	// fmt.Println(bodyJsonValdate)
+
 	query := fmt.Sprintf(`
-	select * from public.orders o 
+	select o.id, o.name, o.email, o.wa, o.ticket, t.ticket_name
+	from public.orders o 
 	join public.tickets t on t.id=o.ticket 
 	where o.id='%v' and now() >= t.start_time and now() <= t.end_time 
-	`, orderId)
+	`, bodyJsonValdate.OrderID)
 	result := db.Raw(query).Scan(&order)
+
+	if ticketId != order.Ticket {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"data":    "Your ticket cannot be used at this event.",
+			"message": "fail",
+		})
+	}
+
 	switch result.RowsAffected {
 	case 1:
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"data": fiber.Map{
+				"order":  order.ID,
 				"name":   order.Name,
-				"ticket": order.TicketID,
+				"email":  order.Email,
+				"ticket": order.TicketName,
 			},
 			"message": "ok",
 		})
 	default:
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"data":    "time doesn't match",
+			"data":    "time doesn't match or ticket doesn't exist",
 			"message": "fail",
 		})
 	}
